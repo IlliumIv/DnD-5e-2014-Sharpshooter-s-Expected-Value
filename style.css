@@ -1,0 +1,250 @@
+.field {
+    display: grid;
+    grid-template-columns: 0.5fr 3fr 0.5fr 200px 0.5fr;
+    grid-column-gap: 10px;
+    min-height: 35px;
+}
+
+.grid-header {
+    display: grid;
+    grid-template-columns: 0.5fr 2.5fr 0.5fr 200px 0.5fr;
+    grid-column-gap: 10px;
+    min-height: 35px;
+}
+
+.damage-sources,
+.fields-container,
+.conclusion-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-row-gap: 5px;
+}
+
+.attack-bonus-container {
+    text-align: end;
+    min-height: 35px;;
+}
+
+.breakpoint-label {
+    text-align: end;
+}
+
+.header > span,
+.breakpoint-disable-feat-label {
+    font-size: 25px;
+}
+
+.breakpoint-disable-feat-label {
+    font-weight: bold;
+}
+
+.crit-system-container {
+    text-align: center;
+    min-height: 35px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 10px;
+}
+
+.attack-bonus-container label,
+.crit-system-label {
+    margin: auto 0;
+    text-align: end;
+}
+
+.armor-class-container label {
+    margin: auto 0;
+}
+
+.attack-bonus-container div {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-column-gap: 10px;
+    min-height: 35px;
+}
+
+.armor-class-container div {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-column-gap: 10px;
+    min-height: 35px;
+}
+
+.crit-system-selector {
+    margin: 0 auto 0 0;
+}
+
+.ac-ab-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+}
+
+.ac-ab-container > span {
+    margin: auto;
+}
+
+.settings-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-column-gap: 10px;
+    grid-row-gap: 5px;
+}
+
+.field-buttons-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+}
+
+.dice-damage-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-column-gap: 10px;
+}
+
+.dice-damage-container span {
+    margin: auto;
+}input {
+    text-align: center;
+}
+
+.header-buttons-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-column-gap: 10px;
+}
+
+.flat-damage-container {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.avg-damage-container,
+.avg-crit-damage-container,
+.hit-chance-container,
+.expectation-damage-container,
+.conclusion-header {
+    display: grid;
+    grid-template-columns: 9fr 4fr 0.1fr 3fr;
+    grid-row-gap: 5px;
+    grid-column-gap: 10px;
+    margin: 0 25%;
+    font-size: 16px;
+}
+
+.avg-damage-container,
+.avg-crit-damage-container,
+.expectation-damage-container {
+    border-bottom: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: lightslategray;
+}
+
+.breakpoint-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-row-gap: 5px;
+    grid-column-gap: 10px;
+}
+
+.breakpoint-container > span,
+.breakpoint-disable-feat-label {
+    text-align: center;
+}
+
+.expectation-damage-container > span {
+    margin: auto;
+}
+
+.hit-chance-no-feat-description-label,
+.avg-crit-damage-no-feat-output,
+.avg-damage-no-feat-output,
+.expectation-damage-no-feat-output {
+    margin: 0 0 0 auto;
+}sup i {
+    font-size: 10px;
+    margin: auto;
+    padding: 0;
+}
+
+.expectation-damage-label,
+.avg-damage-label,
+.avg-crit-damage-label,
+.hit-chance-label {
+    text-align: center;
+}
+
+.can-crit-explanation,
+.without-ss-label {
+    text-align: end;
+}
+
+.can-crit-explanation,
+.breakpoint-container > span {
+    font-size: 14px;
+}hr {
+    width: 100%;
+}label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}i {
+    padding: 0px 5px;
+    margin: auto;
+    width: 20px;
+    text-align: center;
+}
+
+.selector-with-icon-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+.selector-with-icon-container select {
+    text-align: center;
+}
+
+.selector-with-icon-container i {
+    margin: auto 0 auto 10px;
+}
+
+body,
+button,
+input,
+select {
+    font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.wrapper {
+    width: 80%;
+    max-width: 1080px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f5f2cf, #f3f1db);
+    margin: 24px auto 0px auto;
+    padding: 12px;
+}
+
+.grid-header > label {
+    margin-top: auto;
+    align-self: center;
+    text-align: center;
+    font-weight: bold;
+}
+
+.foother {
+    font-size: 14px;
+}
+
+.winner {
+    font-weight: bold;
+}button i {
+    pointer-events: none;
+}
+
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width:thin
+  }
+}

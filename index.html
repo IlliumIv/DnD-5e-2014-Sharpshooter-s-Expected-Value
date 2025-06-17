@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8"/>
+    <title>DnD 5e 2014 Sharpshooter's Expected Value</title>
+    <meta name="description" content="A mathematical expectation calculator for the Sharpshooter feat."/>
+    <link rel="stylesheet" type="text/css" href="style.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/icons.min.css"/>
+    <link rel="icon" href="dragon-solid.svg"/>
+</head>
+<html>
+    <body>
+        <template id="can-crit-template">
+            <select class="can-crit-selector" id="can-crit-selector" onchange="calculate()">
+                <option value="yes" id="yes">Yes</option>
+                <option value="no" id="no">No</option>
+                <option value="only" id="only">Only</option>
+            </select>
+        </template>
+        <template id="dice-damage-template">
+            <span class="dice-damage-container" id="damage-container">
+                <input class="dice-count" id="dice-count" type="number" min="1" max="10" value="1" onchange="calculate()">
+                <span>d</span>
+                <select class="dice-selector" id="dice-selector" onchange="calculate()">
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="6" selected>6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="20">20</option>
+                </select>
+            </span>
+        </template>
+        <template id="flat-damage-template">
+            <span class="flat-damage-container" id="damage-container">
+                <input class="additive" id="additive" type="number" min="-99" max="99" value="5" onchange="calculate()">
+            </span>
+        </template>
+        <template id="field-template">
+            <div class="field" id="field">
+                <span class="field-buttons-container">
+                    <button class="delete-source-button" id="delete-source-button" onclick="deleteSource(event)" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                    <button class="rename-source-button" id="rename-source-button" onclick="renameSource(event)" title="Rename"><i class="fa-solid fa-pen-to-square"></i></button>
+                </span>
+                <label class="field-name" id="field-name"></label>
+                <span class="selector-with-icon-container">
+                    <select class="type-selector" onchange="changeType(event)" id="type-selector">
+                        <option value="dice" selected>Dice</option>
+                        <option value="flat">Flat</option>
+                    </select>
+                    <i class="fa-solid fa-dice-d20" id="icon"></i>
+                </span>
+            </div>
+        </template>
+        <div class="wrapper">
+            <div>
+                <div class="header">
+                    <span>Sharpshooter's Expected Value</span>
+                </div>
+                <hr>
+                <div class="damage-sources">
+                    <div class="grid-header">
+                        <span class="header-buttons-container">
+                            <button onclick="addSource()" title="Add"><i class="fa-solid fa-solid fa-square-plus"></i></button>
+                            <button onclick="exportCalculation()" title="Export"><i class="fa-solid fa-file-arrow-down"></i></button>
+                            <button onclick="importCalculation()" title="Import"><i class="fa-solid fa-file-arrow-up"></i></button>
+                        </span>
+                        <label>Sources:</label>
+                        <label>Type:</label>
+                        <label>Value:</label>
+                        <label>Can crit?</label>
+                    </div>
+                    <div class="fields-container" id="fields-container"></div>
+                    <span class="can-crit-explanation">
+                        "Yes" - This source of damage should be counted in critical damage calculation; it counts both in critical and non-critical damage calculations.
+                        <br>"No" - This source of damage should not be counted in critical damage calculation, but only in non-critical damage calculation.
+                        <br>"Only" - This source of damage is counted only in critical damage calculation; it is ignored in non-critical damage calculation.
+                    </span>
+                </div>
+                <hr>
+                <div class="settings-container" id="settings-container">
+                    <div class="crit-system-container parameter">
+                        <label class="crit-system-label">Crit system:</label>
+                        <select class="crit-system-selector" id="crit-system-selector" onchange="calculate()">
+                            <option value="double-dice" selected>Double dices (default)</option>
+                            <option value="max-plus-dice">Max dice value plus dice (HB)</option>
+                        </select>
+                    </div>
+                    <div class="ac-ab-container">
+                        <div class="attack-bonus-container parameter">
+                            <div>
+                                <label class="attack-bonus-label">Attack Bonus</label>
+                                <input class="attack-bonus-input" id="attack-bonus" type="number" min="-99" max="99" value="9" onchange="calculate()">
+                                <i class="fa-solid fa-hand-fist"></i>
+                            </div>
+                        </div>
+                        <span>vs</span>
+                        <div class="armor-class-container parameter">
+                            <div>
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <input class="armor-class-input" id="armor-class" type="number" min="1" max="99" value="19" onchange="calculate()">
+                                <label class="armor-class-label">Foe Armor Class</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="conclusion-container" id="conclusion-container">
+                    <div class="breakpoint-container">
+                        <label class="breakpoint-disable-feat-label">
+                            <label class="breakpoint-label">Foe AC Breakpoints:</label>
+                            <output class="breakpoint-disable-feat-output" id="breakpoint-disable-feat"></output><i class="fa-solid fa-shield-halved"></i>
+                            <span> - </span>
+                            <output class="breakpoint-enable-feat-output" id="breakpoint-enable-feat"></output><i class="fa-solid fa-shield-halved"></i>
+                        </label>
+                        <span>Don't use SS between this values of foe's armor, inclusive!</span>
+                    </div>
+                    <hr>
+                    <div class="conclusion-header">
+                        <label></label>
+                        <label class="without-ss-label">Without SS</label>
+                        <label></label>
+                        <label class="with-ss-label">With SS</label>
+                        <label></label>
+                    </div>
+                    <div class="expectation-damage-container">
+                        <label class="expectation-damage-label">Damage Expected Value<sup><a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a></sup></label>
+                        <output class="expectation-damage-no-feat-output" id="expectation-damage-no-feat"></output>
+                        <span id="expectation-damage-comparer"></span>
+                        <output class="expectation-damage-feat-output" id="expectation-damage-feat"></output>
+                    </div>
+                    <div class="avg-damage-container">
+                        <label class="avg-damage-label">Avg. damage per Hit</label>
+                        <output class="avg-damage-no-feat-output" id="avg-damage-no-feat"></output>
+                        <span id="avg-damage-comparer"><</span>
+                        <output class="avg-damage-feat-output winner" id="avg-damage-feat"></output>
+                    </div>
+                    <div class="avg-crit-damage-container">
+                        <label class="avg-crit-damage-label">Avg. damage per Crit</label>
+                        <output class="avg-crit-damage-no-feat-output" id="avg-crit-damage-no-feat"></output>
+                        <span id="avg-crit-damage-comparer"><</span>
+                        <output class="avg-crit-damage-feat-output winner" id="avg-crit-damage-feat"></output>
+                    </div>
+                    <div class="hit-chance-container">
+                        <label class="hit-chance-label">Hit Chance</label>
+                        <label class="hit-chance-no-feat-description-label"><output class="hit-chance-no-feat-output" id="hit-chance-no-feat"></output>%</label>
+                        <span id="hit-chance-comparer">=</span>
+                        <label class="hit-chance-description-label"><output class="hit-chance-feat-output" id="hit-chance-feat"></output>%</label>
+                    </div>
+                </div>
+                <hr>
+                <div class="foother">
+                    <a href="https://github.com/IlliumIv/DnD-5e-2014-Sharpshooter-s-Expected-Value/commits/master/" target="_blank">Changelog</a>
+                    |
+                    <a href="https://github.com/IlliumIv/DnD-5e-2014-Sharpshooter-s-Expected-Value" target="_blank">Source</a>
+                    <br>
+                    Made by <a href="https://github.com/IlliumIv" target="_blank">IlliumIv</a>. Last update - Jun 18, 2025.
+                    <br>
+                    CC0 2025
+                </div>
+            </div>
+        </div>
+        <script src="calc.min.js"></script>
+    </body>
+</html>
