@@ -279,9 +279,24 @@ function calculate() {
     setValue("#expectation-damage-no-feat", noFeatExpDamage, noFeatExpDamage > featExpDamage);
     setValue("#expectation-damage-feat", featExpDamage, featExpDamage > noFeatExpDamage);
 
+    var disabled = document.querySelector("#feat-disabled");
+    disabled.classList.remove("winner");
+    var enabled = document.querySelector("#feat-enabled");
+    enabled.classList.remove("winner");
+    comparer = ">";
+
+    if (noFeatExpDamage >= featExpDamage)
+        disabled.classList.add("winner");
+    else {
+        enabled.classList.add("winner");
+        comparer = "<";
+    }
+    setValue("#feat-usage-comparer", comparer);
+
     var disableBreakpoint = getDisableBreakpoint(AB, avgDamage, avgCritDamage);
-    setValue("#breakpoint-disable-feat", disableBreakpoint);
-    setValue("#breakpoint-enable-feat", getEnableBreakpoint(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1);
+    setValue("#breakpoint-disable-feat", disableBreakpoint > 0 ? disableBreakpoint: 0);
+    var enableBreakpoint = getEnableBreakpoint(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1;
+    setValue("#breakpoint-enable-feat", enableBreakpoint > 0 ? enableBreakpoint : 0);
     
     save();
 }

@@ -1,13 +1,7 @@
-.field {
-    display: grid;
-    grid-template-columns: 0.5fr 3fr 0.5fr 200px 0.5fr;
-    grid-column-gap: 10px;
-    min-height: 35px;
-}
-
+.field,
 .grid-header {
     display: grid;
-    grid-template-columns: 0.5fr 2.5fr 0.5fr 200px 0.5fr;
+    grid-template-columns: auto 1fr 110px 162px 110px;
     grid-column-gap: 10px;
     min-height: 35px;
 }
@@ -88,6 +82,7 @@
     grid-template-columns: 1fr;
     grid-column-gap: 10px;
     grid-row-gap: 5px;
+    margin: 5px 0;
 }
 
 .field-buttons-container {
@@ -125,10 +120,10 @@
 .expectation-damage-container,
 .conclusion-header {
     display: grid;
-    grid-template-columns: 9fr 4fr 0.1fr 3fr;
+    grid-template-columns: minmax(190px, 1fr) 66px 11px 66px;
     grid-row-gap: 5px;
     grid-column-gap: 10px;
-    margin: 0 25%;
+    margin: 0 32%;
     font-size: 16px;
 }
 
@@ -219,6 +214,7 @@ select {
 
 .wrapper {
     width: 80%;
+    min-width: 670px;
     max-width: 1080px;
     border-radius: 12px;
     background: linear-gradient(135deg, #f5f2cf, #f3f1db);

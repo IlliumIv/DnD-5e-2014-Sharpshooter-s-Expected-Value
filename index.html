@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8"/>
-    <title>DnD 5e 2014 Sharpshooter's Expected Value</title>
-    <meta name="description" content="A mathematical expectation calculator for the Sharpshooter feat."/>
+    <title>DnD 5e 2014 GWM\SS Damage Expected Calculator</title>
+    <meta name="description" content="A mathematical expectation calculator for Sharpshooter and Great Weapon Master feats."/>
     <link rel="stylesheet" type="text/css" href="style.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/icons.min.css"/>
     <link rel="icon" href="dragon-solid.svg"/>
@@ -55,7 +55,7 @@
         <div class="wrapper">
             <div>
                 <div class="header">
-                    <span>Sharpshooter's Expected Value</span>
+                    <span>Sharpshooter \ Great Weapon Master Damage Expected Calculator</span>
                 </div>
                 <hr>
                 <div class="damage-sources">
@@ -77,15 +77,7 @@
                         <br>"Only" - This source of damage is counted only in critical damage calculation; it is ignored in non-critical damage calculation.
                     </span>
                 </div>
-                <hr>
                 <div class="settings-container" id="settings-container">
-                    <div class="crit-system-container parameter">
-                        <label class="crit-system-label">Crit system:</label>
-                        <select class="crit-system-selector" id="crit-system-selector" onchange="calculate()">
-                            <option value="double-dice" selected>Double dices (default)</option>
-                            <option value="max-plus-dice">Max dice value plus dice (HB)</option>
-                        </select>
-                    </div>
                     <div class="ac-ab-container">
                         <div class="attack-bonus-container parameter">
                             <div>
@@ -103,6 +95,13 @@
                             </div>
                         </div>
                     </div>
+                    <div class="crit-system-container parameter">
+                        <label class="crit-system-label">Crit system:</label>
+                        <select class="crit-system-selector" id="crit-system-selector" onchange="calculate()">
+                            <option value="double-dice" selected>Double dices (default)</option>
+                            <option value="max-plus-dice">Max dice value plus dice (HB)</option>
+                        </select>
+                    </div>
                 </div>
                 <hr>
                 <div class="conclusion-container" id="conclusion-container">
@@ -113,15 +112,14 @@
                             <span> - </span>
                             <output class="breakpoint-enable-feat-output" id="breakpoint-enable-feat"></output><i class="fa-solid fa-shield-halved"></i>
                         </label>
-                        <span>Don't use SS between this values of foe's armor, inclusive!</span>
+                        <span>Don't use SS\GWM between this values of foe's armor, inclusive!</span>
                     </div>
                     <hr>
                     <div class="conclusion-header">
-                        <label></label>
-                        <label class="without-ss-label">Without SS</label>
-                        <label></label>
-                        <label class="with-ss-label">With SS</label>
-                        <label></label>
+                        <label class="without-ss-label">SS\GWM:</label>
+                        <label class="without-ss-label" id="feat-disabled">Disabled</label>
+                        <span id="feat-usage-comparer"></span>
+                        <label class="with-ss-label" id="feat-enabled">Enabled</label>
                     </div>
                     <div class="expectation-damage-container">
                         <label class="expectation-damage-label">Damage Expected Value<sup><a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a></sup></label>
