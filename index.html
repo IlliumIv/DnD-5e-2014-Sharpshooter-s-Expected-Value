@@ -44,11 +44,11 @@
                 </span>
                 <label class="field-name" id="field-name"></label>
                 <span class="selector-with-icon-container">
-                    <select class="type-selector" onchange="changeType(event)" id="type-selector">
+                    <select class="type-selector" onchange="onChangeDamageType(event)" id="type-selector">
                         <option value="dice" selected>Dice</option>
                         <option value="flat">Flat</option>
                     </select>
-                    <i class="fa-solid fa-dice-d20" id="icon"></i>
+                    <i class="fa-solid fa-dice-d20" id="damage-type-icon"></i>
                 </span>
             </div>
         </template>
@@ -79,25 +79,39 @@
                 </div>
                 <div class="settings-container" id="settings-container">
                     <div class="ac-ab-container">
-                        <div class="attack-bonus-container parameter">
+                        <div class="attack-type-container">
+                            <label class="attack-type-label">Attack type:</label>
+                            <span class="selector-with-icon-container">
+                                <select class="attack-type-selector parameter" id="attack-type-selector" onchange="onChangeAttackType()">
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="advantage">Advantage</option>
+                                    <option value="disadvantage">Disadvantage</option>
+                                    <option value="elven">Elven accuracy</option>
+                                </select>
+                                <i class="fa-solid" id="attack-type-icon"></i>
+                            </span>
+                        </div>
+                        <div class="attack-bonus-container">
                             <div>
                                 <label class="attack-bonus-label">Attack Bonus</label>
-                                <input class="attack-bonus-input" id="attack-bonus" type="number" min="-99" max="99" value="9" onchange="calculate()">
+                                <input class="attack-bonus-input parameter" id="attack-bonus" type="number" min="-99" max="99" value="9" onchange="calculate()">
                                 <i class="fa-solid fa-hand-fist"></i>
                             </div>
                         </div>
                         <span>vs</span>
-                        <div class="armor-class-container parameter">
+                        <div class="armor-class-container">
                             <div>
                                 <i class="fa-solid fa-shield-halved"></i>
-                                <input class="armor-class-input" id="armor-class" type="number" min="1" max="99" value="19" onchange="calculate()">
+                                <input class="armor-class-input parameter" id="armor-class" type="number" min="1" max="99" value="19" onchange="calculate()">
                                 <label class="armor-class-label">Foe Armor Class</label>
                             </div>
                         </div>
                     </div>
-                    <div class="crit-system-container parameter">
-                        <label class="crit-system-label">Crit system:</label>
-                        <select class="crit-system-selector" id="crit-system-selector" onchange="calculate()">
+                    <div class="crit-settings-container">
+                        <label class="min-crit-value-label">Crit when roll&nbsp;</label>
+                        <input class="min-crit-value-input parameter" id="min-crit-value" type="number" min="1" max="20" value="20" onchange="calculate()">
+                        <label class="crit-system-label">&nbsp;and above. Crit system:&nbsp;</label>
+                        <select class="crit-system-selector parameter" id="crit-system-selector" onchange="calculate()">
                             <option value="double-dice" selected>Double dices (default)</option>
                             <option value="max-plus-dice">Max dice value plus dice (HB)</option>
                         </select>

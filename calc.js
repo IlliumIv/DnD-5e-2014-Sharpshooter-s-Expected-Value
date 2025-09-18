@@ -146,6 +146,50 @@ function getCalculationsByRoll(value, minToCritValue, accuracyType, isLucky, avg
     return calcs;
 }
 
+function getDisableBreakpoint(value, avgDamage, avgCritDamage) {
+    var AC = value - 5;
+
+    var counter = 0;
+
+    var calcs = getCalculationsByRoll(AC, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
+
+    while (calcs[Mode.Feat][Calculation.ExpectedDamage] >= calcs[Mode.NoFeat][Calculation.ExpectedDamage] && counter < 99) {
+        AC++;
+
+        var cache = {noFeatExpDamage: calcs[Mode.NoFeat][Calculation.ExpectedDamage],
+                     featExpDamage: calcs[Mode.Feat][Calculation.ExpectedDamage]};
+
+        calcs = getCalculationsByRoll(AC, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
+
+        if (cache.noFeatExpDamage <= calcs[Mode.NoFeat][Calculation.ExpectedDamage] && cache.featExpDamage >= calcs[Mode.Feat][Calculation.ExpectedDamage])
+            counter++;
+
+        cache = {noFeatExpDamage: calcs[Mode.NoFeat][Calculation.ExpectedDamage], featExpDamage: calcs[Mode.Feat][Calculation.ExpectedDamage]};
+    }
+
+    return AC >= 100 ? value : AC;
+}
+
+function getEnableBreakpoint(AC, AB, avgDamage, avgCritDamage) {
+    AC++;
+    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
+    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+    
+    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
+    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+
+    while (featExpDamage < noFeatExpDamage) {
+        AC++;
+        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
+        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+        
+        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
+        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+    }
+
+    return AC;
+}
+
 //----------------------------------------
 
 
@@ -230,9 +274,8 @@ function getSettingsJson() {
     var settings = document.querySelector("#settings-container").getElementsByClassName("parameter");
 
     for (var i = 0; i < settings.length; i++) {
-        var element = settings[i].querySelector("input") ?? settings[i].querySelector("select");
-        var id = element.id;
-        var value = element.value;
+        var id = settings[i].id;
+        var value = settings[i].value;
         var setting = {i, id, value};
         arr.push(setting);
     }
@@ -274,6 +317,7 @@ function restoreSources(sources, needOverwrite) {
         fieldContainer.lastElementChild.querySelector("#field-name").innerHTML = sources[i].name;
         fieldContainer.lastElementChild.querySelector("#type-selector").value = sources[i].type;
         renderSourceDamage(sources[i].type, fieldContainer.lastElementChild);
+        renderAttackTypeIcon();
         fieldContainer.lastElementChild.querySelector("#can-crit-selector").value = sources[i].canCrit;
         
         if (sources[i].type == "dice") {
@@ -321,7 +365,7 @@ function renameSource(e) {
     save();
 }
 
-function changeType(e) {
+function onChangeDamageType(e) {
     var caller = e.target || e.srcElement;
     var field = caller.parentElement.parentElement;
     var templateType = caller.value;
@@ -330,6 +374,31 @@ function changeType(e) {
     field.removeChild(field.querySelector("#can-crit-selector"));
 
     renderSourceDamage(templateType, field);
+
+    calculate();
+}
+
+function renderAttackTypeIcon() {
+    var attackType = document.querySelector("#attack-type-selector").value;
+    var icon = document.querySelector("#attack-type-icon");
+
+    if (attackType == "normal") {
+        icon.classList.remove("fa-check-double");
+    }
+    if (attackType == "advantage" || attackType == "elven") {
+        icon.classList.remove("disadvantage");
+        icon.classList.add("fa-check-double");
+        icon.classList.add("advantage");
+    }
+    if (attackType == "disadvantage") {
+        icon.classList.remove("advantage");
+        icon.classList.add("fa-check-double");
+        icon.classList.add("disadvantage");
+    }
+}
+
+function onChangeAttackType() {
+    renderAttackTypeIcon();
 
     calculate();
 }
@@ -346,7 +415,7 @@ function renderSourceDamage(templateType, field) {
     var canCritTemplate = document.querySelector("#can-crit-template")
     field.appendChild(document.importNode(canCritTemplate.content, true));
 
-    var icon = field.querySelector("#icon");
+    var icon = field.querySelector("#damage-type-icon");
     if (templateType == "dice") {
         field.querySelector("#yes").setAttribute("selected", "")
         icon.classList.remove("fa-plus");
@@ -360,14 +429,14 @@ function renderSourceDamage(templateType, field) {
     }
 }
 
-function getNonCritHitChance(withFeat, AC, AB) {
-    var gap = withFeat ? 15 : 20;
-    return Math.min(Math.max(gap + AB - AC, 0), 18);
+function getNonCritHitChance(withFeat, AC, AB, critCount) {
+    var gap = withFeat ? 16 : 21;
+    return Math.min(Math.max(gap - critCount + AB - AC, 0), Math.max(19 - critCount,0));
 }
 
-function expDamage(withFeat, nonCritHitChance, avgDamage, avgCritDamage) {
+function expDamage(withFeat, nonCritHitChance, avgDamage, avgCritDamage, critCount) {
     var add = withFeat ? 10 : 0;
-    return ((avgDamage + add) * nonCritHitChance + avgCritDamage + add) / 20;
+    return ((avgDamage + add) * nonCritHitChance + (avgCritDamage + add) * critCount) / 20;
 }
 
 function getAvgDamage(isCrit, dice, diceCount, critSystem) {
@@ -404,8 +473,9 @@ function calculateOld() {
     var avgCritDamage = avgCrit + flat;
     var AC = document.querySelector("#armor-class").value * 1;
     var AB = document.querySelector("#attack-bonus").value * 1;
-    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+    var critCount = 21 - document.querySelector("#min-crit-value").value * 1;
+    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB, critCount);
+    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB, critCount);
 
     setValue("#avg-damage-no-feat", avgDamage);
     setValue("#avg-damage-feat", avgDamage + 10);
@@ -421,8 +491,8 @@ function calculateOld() {
     setValue("#hit-chance-no-feat", noFeatHitChance, noFeatHitChance > featHitChance);
     setValue("#hit-chance-feat", featHitChance, featHitChance > noFeatHitChance);
 
-    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage, critCount);
+    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage, critCount);
     comparer = "=";
     if (noFeatExpDamage > featExpDamage) comparer = ">";
     if (noFeatExpDamage < featExpDamage) comparer = "<";
@@ -444,9 +514,9 @@ function calculateOld() {
     }
     setValue("#feat-usage-comparer", comparer);
 
-    var disableBreakpoint = getDisableBreakpoint(AB, avgDamage, avgCritDamage);
+    var disableBreakpoint = getDisableBreakpointOld(AB, avgDamage, avgCritDamage);
     setValue("#breakpoint-disable-feat", disableBreakpoint > 0 ? disableBreakpoint: 0);
-    var enableBreakpoint = getEnableBreakpoint(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1;
+    var enableBreakpoint = getEnableBreakpointOld(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1;
     setValue("#breakpoint-enable-feat", enableBreakpoint > 0 ? enableBreakpoint : 0);
     
     save();
@@ -455,11 +525,11 @@ function calculateOld() {
 function getDisableBreakpointOld(AB, avgDamage, avgCritDamage) {
     var AC = AB - 5 + 1;
     
-    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB, critCount);
+    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB, critCount);
     
-    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage, critCount);
+    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage, critCount);
 
     var counter = 0;
 
@@ -468,11 +538,11 @@ function getDisableBreakpointOld(AB, avgDamage, avgCritDamage) {
 
         var cache = {noFeatExpDamage, featExpDamage};
 
-        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB, critCount);
+        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB, critCount);
         
-        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage, critCount);
+        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage, critCount);
         
         if (cache.noFeatExpDamage <= noFeatExpDamage && cache.featExpDamage >= featExpDamage)
             counter ++;
@@ -485,19 +555,19 @@ function getDisableBreakpointOld(AB, avgDamage, avgCritDamage) {
 
 function getEnableBreakpointOld(AC, AB, avgDamage, avgCritDamage) {
     AC++;
-    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB, critCount);
+    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB, critCount);
     
-    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage, critCount);
+    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage, critCount);
 
     while (featExpDamage < noFeatExpDamage) {
         AC++;
-        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
+        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB, critCount);
+        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB, critCount);
         
-        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage, critCount);
+        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage, critCount);
     }
 
     return AC;
