@@ -1,3 +1,154 @@
+const Accuracy = {
+    Normal: 0,
+    Advantage: 1,
+    Disadvantage: 2,
+    ElvenAccuracy: 3
+}
+
+const Calculation = {
+    ExpectedDamage: 0,
+    NonCritHitChance: 1,
+    CritHitChance: 2,
+    HitChance: 3
+}
+
+const Mode = {
+    NoFeat: 0,
+    Feat: 1,
+}
+
+// https://anydice.com/program/3f539
+const probabilityMatrix = [
+        // Non Lucky: 0
+    [
+            // Normal: 0
+        [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+            // Advantage: 1
+        [0.0025, 0.0075, 0.0125, 0.0175, 0.0225, 0.0275, 0.0325, 0.0375, 0.0425, 0.0475, 0.0525, 0.0575, 0.0625, 0.0675, 0.0725, 0.0775, 0.0825, 0.0875, 0.0925, 0.0975],
+            // Disadvantage: 2
+        [0.0975, 0.0925, 0.0875, 0.0825, 0.0775, 0.0725, 0.0675, 0.0625, 0.0575, 0.0525, 0.0475, 0.0425, 0.0375, 0.0325, 0.0275, 0.0225, 0.0175, 0.0125, 0.0075, 0.0025],
+            // ElvenAccuracy: 3
+        [0.000125, 0.000875, 0.002375, 0.004625, 0.007625, 0.011375, 0.015875, 0.021125, 0.027125, 0.033875, 0.041375, 0.049625, 0.058625, 0.068375, 0.078875, 0.090125, 0.102125, 0.114875, 0.128375, 0.142625]
+    ],
+        // Lucky: 1
+    [
+            // Normal: 0
+        [0.0025, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525, 0.0525],
+            // Advantage: 1
+        [0.000125, 0.003125, 0.008625, 0.014125, 0.019625, 0.025125, 0.030625, 0.036125, 0.041625, 0.047125, 0.052625, 0.058125, 0.063625, 0.069125, 0.074625, 0.080125, 0.085625, 0.091125, 0.096625, 0.102125],
+            // Disadvantage: 2
+        [0.00725, 0.10175, 0.09625, 0.09075, 0.08525, 0.07975, 0.07425, 0.06875, 0.06325, 0.05775, 0.05225, 0.04675, 0.04125, 0.03575, 0.03025, 0.02475, 0.01925, 0.01375, 0.00825, 0.00275],
+            // ElvenAccuracy: 3
+        [0.0000003125, 0.0001671875, 0.0010771875, 0.0028553125, 0.0055015625, 0.0090159375, 0.0133984375, 0.0186490625, 0.0247678125, 0.0317546875, 0.0396096875, 0.0483328125, 0.0579240625, 0.0683834375, 0.0797109375, 0.0919065625, 0.1049703125, 0.1189021875, 0.1337021875, 0.1493703125]
+    ]
+]
+
+function getChances(minToHitValue, minToCritValue, accuracyType, isLucky) {
+    var probabilities = probabilityMatrix[+isLucky][accuracyType].slice(Math.min(20, Math.max(0, minToCritValue - 1)), undefined);
+    var critChance = probabilities.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+    probabilities = probabilityMatrix[+isLucky][accuracyType].slice(Math.min(19, Math.max(1, minToHitValue - 1)), undefined);
+    var hitChance = probabilities.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+    var nonCritHitChance = Number((Math.max(0, hitChance - critChance)).toFixed(12));
+    hitChance = Number((hitChance).toFixed(12));
+    critChance = Number((critChance).toFixed(12));
+
+    return [nonCritHitChance, critChance, hitChance]
+}
+
+function calculate() {
+    var flat = 0;
+    var avgDices = 0;
+    var avgDicesCrit = 0;
+
+    var critSystem = document.querySelector("#crit-system-selector").value;
+    var elements = document.getElementsByClassName("field");
+
+    for (var i = 0; i < elements.length; i++) {
+        var type = elements[i].querySelector("#type-selector").value;
+        if (type == "dice") {
+            var dice = elements[i].querySelector("#dice-selector").value;
+            var diceCount = elements[i].querySelector("#dice-count").value;
+            var canCrit = elements[i].querySelector("#can-crit-selector").value;
+
+            if (canCrit != "only")
+                avgDices = avgDices + getAvgDamage(false, dice, diceCount, critSystem);
+
+            avgDicesCrit = avgDicesCrit + getAvgDamage(canCrit == "yes", dice, diceCount, critSystem);
+        }
+        if (type == "flat")
+            flat = flat + elements[i].querySelector("#additive").value * 1;
+    }
+    
+    var avgDamage = avgDices + flat;
+    var avgCritDamage = avgDicesCrit + flat;
+
+    var AB = document.querySelector("#attack-bonus").value * 1;
+    var AC = document.querySelector("#armor-class").value * 1;
+
+    var calcs = getCalculationsByRoll(AC - AB, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
+
+    setValue("#avg-damage-no-feat", avgDamage);
+    setValue("#avg-damage-feat", avgDamage + 10);
+    setValue("#avg-crit-damage-no-feat", avgCritDamage);
+    setValue("#avg-crit-damage-feat", avgCritDamage + 10);
+    
+    var comparer = "=";
+    if (calcs[Mode.NoFeat][Calculation.HitChance] > calcs[Mode.Feat][Calculation.HitChance]) comparer = ">";
+    if (calcs[Mode.NoFeat][Calculation.HitChance] < calcs[Mode.Feat][Calculation.HitChance]) comparer = "<";
+    setValue("#hit-chance-comparer", comparer);
+    setValue("#hit-chance-no-feat", Math.round(calcs[Mode.NoFeat][Calculation.HitChance] * 100),
+        calcs[Mode.NoFeat][Calculation.HitChance] > calcs[Mode.Feat][Calculation.HitChance]);
+    setValue("#hit-chance-feat", Math.round(calcs[Mode.Feat][Calculation.HitChance] * 100),
+        calcs[Mode.Feat][Calculation.HitChance] > calcs[Mode.NoFeat][Calculation.HitChance]);
+
+    comparer = "=";
+    if (calcs[Mode.NoFeat][Calculation.ExpectedDamage] > calcs[Mode.Feat][Calculation.ExpectedDamage]) comparer = ">";
+    if (calcs[Mode.NoFeat][Calculation.ExpectedDamage] < calcs[Mode.Feat][Calculation.ExpectedDamage]) comparer = "<";
+    setValue("#expectation-damage-comparer", comparer);
+    setValue("#expectation-damage-no-feat", calcs[Mode.NoFeat][Calculation.ExpectedDamage],
+        calcs[Mode.NoFeat][Calculation.ExpectedDamage] > calcs[Mode.Feat][Calculation.ExpectedDamage]);
+    setValue("#expectation-damage-feat", calcs[Mode.Feat][Calculation.ExpectedDamage],
+        calcs[Mode.Feat][Calculation.ExpectedDamage] > calcs[Mode.NoFeat][Calculation.ExpectedDamage]);
+
+    var disabled = document.querySelector("#feat-disabled");
+    disabled.classList.remove("winner");
+    var enabled = document.querySelector("#feat-enabled");
+    enabled.classList.remove("winner");
+    comparer = ">";
+
+    if (calcs[Mode.NoFeat][Calculation.ExpectedDamage] >= calcs[Mode.Feat][Calculation.ExpectedDamage]) {
+        disabled.classList.add("winner");
+    }
+    else {
+        enabled.classList.add("winner");
+        comparer = "<";
+    }
+    setValue("#feat-usage-comparer", comparer);
+
+    var disableBreakpoint = getDisableBreakpoint(AC - AB, avgDamage, avgCritDamage) + AB;
+    var enableBreakpoint = getEnableBreakpoint(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1;
+    setValue("#breakpoint-disable-feat", disableBreakpoint > 0 ? disableBreakpoint: 0);
+    setValue("#breakpoint-enable-feat", enableBreakpoint > 0 ? enableBreakpoint : 0);
+    
+    save();
+}
+
+function getCalculationsByRoll(value, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage) {
+    var chances = getChances(value, minToCritValue, accuracyType, isLucky);
+    var calcs = [];
+    // No Feat Damage and Chances
+    calcs[0] = [Number((chances[0] * avgDamage + chances[1] * avgCritDamage).toFixed(2)), chances[0], chances[1], chances[2]]
+    var chances = getChances(value + 5, minToCritValue, accuracyType, isLucky);
+    // Feat Damage and Chances
+    calcs[1] = [Number((chances[0] * (avgDamage + 10) + chances[1] * (avgCritDamage + 10)).toFixed(2)), chances[0], chances[1], chances[2]]
+    return calcs;
+}
+
+//----------------------------------------
+
+
 function addSource() {
     var sources = JSON.parse('[{"i":0,"name":"Base damage","type":"dice","count":"1","dice":"6","canCrit":"yes"}]');
 
@@ -225,7 +376,7 @@ function getAvgDamage(isCrit, dice, diceCount, critSystem) {
         : diceCount * (dice * 1 + 1) / 2;
 }
 
-function calculate() {
+function calculateOld() {
     var flat = 0;
     var avgDices = 0;
     var avgCrit = 0;
@@ -301,7 +452,7 @@ function calculate() {
     save();
 }
 
-function getDisableBreakpoint(AB, avgDamage, avgCritDamage) {
+function getDisableBreakpointOld(AB, avgDamage, avgCritDamage) {
     var AC = AB - 5 + 1;
     
     var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
@@ -332,7 +483,7 @@ function getDisableBreakpoint(AB, avgDamage, avgCritDamage) {
     return AC >= 100 ? NaN : AC;
 }
 
-function getEnableBreakpoint(AC, AB, avgDamage, avgCritDamage) {
+function getEnableBreakpointOld(AC, AB, avgDamage, avgCritDamage) {
     AC++;
     var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
     var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
