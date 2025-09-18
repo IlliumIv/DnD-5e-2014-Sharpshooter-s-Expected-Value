@@ -55,13 +55,12 @@
         <div class="wrapper">
             <div>
                 <div class="header">
-                    <span>Expected Damage Calculator for Sharpshooter and Great Weapon Master</span>
+                    <span>Expected Damage Calculator for Sharpshooter and Great Weapon Master 5e 2014 feats</span>
                 </div>
                 <hr>
                 <div class="damage-sources">
                     <div class="grid-header">
                         <span class="header-buttons-container">
-                            <button onclick="addSource()" title="Add"><i class="fa-solid fa-solid fa-square-plus"></i></button>
                             <button onclick="exportCalculation()" title="Export"><i class="fa-solid fa-file-arrow-down"></i></button>
                             <button onclick="importCalculation()" title="Import"><i class="fa-solid fa-file-arrow-up"></i></button>
                         </span>
@@ -71,12 +70,17 @@
                         <label>Can crit?</label>
                     </div>
                     <div class="fields-container" id="fields-container"></div>
+                    <span class="add-button-container">
+                        <br>
+                        <button onclick="addSource()" title="Add"><i class="fa-solid fa-solid fa-square-plus"></i></button>
+                    </span>
                     <span class="can-crit-explanation">
                         "Yes" - This source of damage should be counted in critical damage calculation; it counts both in critical and non-critical damage calculations.
                         <br>"No" - This source of damage should not be counted in critical damage calculation, but only in non-critical damage calculation.
                         <br>"Only" - This source of damage is counted only in critical damage calculation; it is ignored in non-critical damage calculation.
                     </span>
                 </div>
+                <hr>
                 <div class="settings-container" id="settings-container">
                     <div class="ac-ab-container">
                         <div class="attack-type-container">
@@ -161,7 +165,7 @@
                         <span id="crit-chance-comparer">=</span>
                         <label class="crit-chance-description-label"><output class="crit-chance-feat-output" id="crit-chance-feat"></output>%</label>
                     </div>
-                    <span class="can-crit-explanation">
+                    <span class="chances-explanation">
                         Chances based on AnyDice <a href="https://anydice.com/program/3f539" target="_blank">calculations</a>.
                     </span>
                     <hr>

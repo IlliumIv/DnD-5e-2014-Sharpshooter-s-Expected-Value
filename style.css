@@ -119,6 +119,12 @@
     grid-column-gap: 10px;
 }
 
+.add-button-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-column-gap: 10px;
+}
+
 .flat-damage-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -188,11 +194,13 @@
 }
 
 .can-crit-explanation,
+.chances-explanation,
 .without-ss-label {
     text-align: end;
 }
 
 .can-crit-explanation,
+.chances-explanation,
 .breakpoint-container > span {
     font-size: 14px;
 }hr {
