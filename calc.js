@@ -17,6 +17,9 @@ const Mode = {
     Feat: 1,
 }
 
+const DecimalDigitsUI = 3;
+const DecimalDigitsChances = 12;
+
 // https://anydice.com/program/3f539
 const probabilityMatrix = [
         // Non Lucky: 0
@@ -47,12 +50,12 @@ function getChances(minToHitValue, minToCritValue, accuracyType, isLucky) {
     var probabilities = probabilityMatrix[+isLucky][accuracyType].slice(Math.min(20, Math.max(0, minToCritValue - 1)), undefined);
     var critChance = probabilities.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
-    probabilities = probabilityMatrix[+isLucky][accuracyType].slice(Math.min(19, Math.max(1, minToHitValue - 1)), undefined);
+    probabilities = probabilityMatrix[+isLucky][accuracyType].slice(Math.min(19, Math.max(0, minToCritValue - 1), Math.max(1, minToHitValue - 1)), undefined);
     var hitChance = probabilities.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
-    var nonCritHitChance = Number((Math.max(0, hitChance - critChance)).toFixed(12));
-    hitChance = Number((hitChance).toFixed(12));
-    critChance = Number((critChance).toFixed(12));
+    var nonCritHitChance = Number((Math.max(0, hitChance - critChance)).toFixed(DecimalDigitsChances));
+    hitChance = Number((hitChance).toFixed(DecimalDigitsChances));
+    critChance = Number((critChance).toFixed(DecimalDigitsChances));
 
     return [nonCritHitChance, critChance, hitChance]
 }
@@ -86,8 +89,10 @@ function calculate() {
 
     var AB = document.querySelector("#attack-bonus").value * 1;
     var AC = document.querySelector("#armor-class").value * 1;
+    var minToCritValue = document.querySelector("#min-crit-value").value * 1;
+    var accuracyType = parseAttackType(document.querySelector("#attack-type-selector").value);
 
-    var calcs = getCalculationsByRoll(AC - AB, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
+    var calcs = getCalculationsByRoll(AC - AB, minToCritValue, accuracyType, false, avgDamage, avgCritDamage);
 
     setValue("#avg-damage-no-feat", avgDamage);
     setValue("#avg-damage-feat", avgDamage + 10);
@@ -98,10 +103,30 @@ function calculate() {
     if (calcs[Mode.NoFeat][Calculation.HitChance] > calcs[Mode.Feat][Calculation.HitChance]) comparer = ">";
     if (calcs[Mode.NoFeat][Calculation.HitChance] < calcs[Mode.Feat][Calculation.HitChance]) comparer = "<";
     setValue("#hit-chance-comparer", comparer);
-    setValue("#hit-chance-no-feat", Math.round(calcs[Mode.NoFeat][Calculation.HitChance] * 100),
+    // setValue("#hit-chance-no-feat", Math.round(calcs[Mode.NoFeat][Calculation.HitChance] * 100),
+    setValue("#hit-chance-no-feat", Number((calcs[Mode.NoFeat][Calculation.HitChance] * 100).toFixed(DecimalDigitsUI)),
         calcs[Mode.NoFeat][Calculation.HitChance] > calcs[Mode.Feat][Calculation.HitChance]);
-    setValue("#hit-chance-feat", Math.round(calcs[Mode.Feat][Calculation.HitChance] * 100),
+    // setValue("#hit-chance-feat", Math.round(calcs[Mode.Feat][Calculation.HitChance] * 100),
+    setValue("#hit-chance-feat", Number((calcs[Mode.Feat][Calculation.HitChance] * 100).toFixed(DecimalDigitsUI)),
         calcs[Mode.Feat][Calculation.HitChance] > calcs[Mode.NoFeat][Calculation.HitChance]);
+    
+    comparer = "=";
+    if (calcs[Mode.NoFeat][Calculation.NonCritHitChance] > calcs[Mode.Feat][Calculation.NonCritHitChance]) comparer = ">";
+    if (calcs[Mode.NoFeat][Calculation.NonCritHitChance] < calcs[Mode.Feat][Calculation.NonCritHitChance]) comparer = "<";
+    setValue("#non-crit-chance-comparer", comparer);
+    setValue("#non-crit-chance-no-feat", Number((calcs[Mode.NoFeat][Calculation.NonCritHitChance] * 100).toFixed(DecimalDigitsUI)),
+        calcs[Mode.NoFeat][Calculation.NonCritHitChance] > calcs[Mode.Feat][Calculation.NonCritHitChance]);
+    setValue("#non-crit-chance-feat", Number((calcs[Mode.Feat][Calculation.NonCritHitChance] * 100).toFixed(DecimalDigitsUI)),
+        calcs[Mode.Feat][Calculation.NonCritHitChance] > calcs[Mode.NoFeat][Calculation.NonCritHitChance]);
+    
+    comparer = "=";
+    if (calcs[Mode.NoFeat][Calculation.CritHitChance] > calcs[Mode.Feat][Calculation.CritHitChance]) comparer = ">";
+    if (calcs[Mode.NoFeat][Calculation.CritHitChance] < calcs[Mode.Feat][Calculation.CritHitChance]) comparer = "<";
+    setValue("#crit-chance-comparer", comparer);
+    setValue("#crit-chance-no-feat", Number((calcs[Mode.NoFeat][Calculation.CritHitChance] * 100).toFixed(DecimalDigitsUI)),
+        calcs[Mode.NoFeat][Calculation.CritHitChance] > calcs[Mode.Feat][Calculation.CritHitChance]);
+    setValue("#crit-chance-feat", Number((calcs[Mode.Feat][Calculation.CritHitChance] * 100).toFixed(DecimalDigitsUI)),
+        calcs[Mode.Feat][Calculation.CritHitChance] > calcs[Mode.NoFeat][Calculation.CritHitChance]);
 
     comparer = "=";
     if (calcs[Mode.NoFeat][Calculation.ExpectedDamage] > calcs[Mode.Feat][Calculation.ExpectedDamage]) comparer = ">";
@@ -127,64 +152,60 @@ function calculate() {
     }
     setValue("#feat-usage-comparer", comparer);
 
-    var disableBreakpoint = getDisableBreakpoint(AC - AB, avgDamage, avgCritDamage) + AB;
-    var enableBreakpoint = getEnableBreakpoint(disableBreakpoint, AB, avgDamage, avgCritDamage) - 1;
-    setValue("#breakpoint-disable-feat", disableBreakpoint > 0 ? disableBreakpoint: 0);
+    var disableBreakpoint = getDisableBreakpoint(minToCritValue, accuracyType, false, avgDamage, avgCritDamage);
+    var enableBreakpoint = getEnableBreakpoint(disableBreakpoint, minToCritValue, accuracyType, false, avgDamage, avgCritDamage) - 1;
+    disableBreakpoint = disableBreakpoint + AB;
+    enableBreakpoint = enableBreakpoint + AB;
+    setValue("#breakpoint-disable-feat", disableBreakpoint > 0 ? disableBreakpoint : 0);
     setValue("#breakpoint-enable-feat", enableBreakpoint > 0 ? enableBreakpoint : 0);
     
     save();
+}
+
+function parseAttackType(str) {
+    switch (str) {
+        case "normal": return Accuracy.Normal;
+        case "advantage": return Accuracy.Advantage;
+        case "disadvantage": return Accuracy.Disadvantage;
+        case "elven": return Accuracy.ElvenAccuracy;
+    }
 }
 
 function getCalculationsByRoll(value, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage) {
     var chances = getChances(value, minToCritValue, accuracyType, isLucky);
     var calcs = [];
     // No Feat Damage and Chances
-    calcs[0] = [Number((chances[0] * avgDamage + chances[1] * avgCritDamage).toFixed(2)), chances[0], chances[1], chances[2]]
+    calcs[0] = [Number((chances[0] * avgDamage + chances[1] * avgCritDamage).toFixed(DecimalDigitsUI)), chances[0], chances[1], chances[2]]
     var chances = getChances(value + 5, minToCritValue, accuracyType, isLucky);
     // Feat Damage and Chances
-    calcs[1] = [Number((chances[0] * (avgDamage + 10) + chances[1] * (avgCritDamage + 10)).toFixed(2)), chances[0], chances[1], chances[2]]
+    calcs[1] = [Number((chances[0] * (avgDamage + 10) + chances[1] * (avgCritDamage + 10)).toFixed(DecimalDigitsUI)), chances[0], chances[1], chances[2]]
     return calcs;
 }
 
-function getDisableBreakpoint(value, avgDamage, avgCritDamage) {
-    var AC = value - 5;
-
+function getDisableBreakpoint(minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage) {
+    var AC = 0;
     var counter = 0;
-
-    var calcs = getCalculationsByRoll(AC, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
-
-    while (calcs[Mode.Feat][Calculation.ExpectedDamage] >= calcs[Mode.NoFeat][Calculation.ExpectedDamage] && counter < 99) {
+    var calcs = getCalculationsByRoll(AC, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage);
+    while (calcs[Mode.Feat][Calculation.ExpectedDamage] >= calcs[Mode.NoFeat][Calculation.ExpectedDamage] && counter < 51) {
         AC++;
-
         var cache = {noFeatExpDamage: calcs[Mode.NoFeat][Calculation.ExpectedDamage],
                      featExpDamage: calcs[Mode.Feat][Calculation.ExpectedDamage]};
 
-        calcs = getCalculationsByRoll(AC, 20, Accuracy.Normal, false, avgDamage, avgCritDamage);
-
+        calcs = getCalculationsByRoll(AC, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage);
         if (cache.noFeatExpDamage <= calcs[Mode.NoFeat][Calculation.ExpectedDamage] && cache.featExpDamage >= calcs[Mode.Feat][Calculation.ExpectedDamage])
             counter++;
-
         cache = {noFeatExpDamage: calcs[Mode.NoFeat][Calculation.ExpectedDamage], featExpDamage: calcs[Mode.Feat][Calculation.ExpectedDamage]};
     }
-
-    return AC >= 100 ? value : AC;
+    return AC >= 50 ? NaN : AC;
 }
 
-function getEnableBreakpoint(AC, AB, avgDamage, avgCritDamage) {
-    AC++;
-    var nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-    var nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
-    
-    var noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-    var featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+function getEnableBreakpoint(disableBreakpoint, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage) {
+    var AC = disableBreakpoint;
+    var calcs = getCalculationsByRoll(AC, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage);
 
-    while (featExpDamage < noFeatExpDamage) {
+    while (calcs[Mode.Feat][Calculation.ExpectedDamage] <= calcs[Mode.NoFeat][Calculation.ExpectedDamage]) {
         AC++;
-        nonCritHitChanceNoFeat = getNonCritHitChance(false, AC, AB);
-        nonCritHitChanceFeat = getNonCritHitChance(true, AC, AB);
-        
-        noFeatExpDamage = expDamage(false, nonCritHitChanceNoFeat, avgDamage, avgCritDamage);
-        featExpDamage = expDamage(true, nonCritHitChanceFeat, avgDamage, avgCritDamage);
+        calcs = getCalculationsByRoll(AC, minToCritValue, accuracyType, isLucky, avgDamage, avgCritDamage);
     }
 
     return AC;

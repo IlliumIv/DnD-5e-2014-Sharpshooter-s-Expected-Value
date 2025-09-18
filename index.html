@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8"/>
-    <title>DnD 5e 2014 GWM\SS Damage Expected Calculator</title>
+    <title>DnD 5e Expected Damage Calculator for GWM\SS</title>
     <meta name="description" content="A mathematical expectation calculator for Sharpshooter and Great Weapon Master feats."/>
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <link rel="stylesheet" type="text/css" href="css/icons.css"/>
@@ -55,7 +55,7 @@
         <div class="wrapper">
             <div>
                 <div class="header">
-                    <span>Sharpshooter \ Great Weapon Master Damage Expected Calculator</span>
+                    <span>Expected Damage Calculator for Sharpshooter and Great Weapon Master</span>
                 </div>
                 <hr>
                 <div class="damage-sources">
@@ -119,16 +119,6 @@
                 </div>
                 <hr>
                 <div class="conclusion-container" id="conclusion-container">
-                    <div class="breakpoint-container">
-                        <label class="breakpoint-disable-feat-label">
-                            <label class="breakpoint-label">Foe AC Breakpoints:</label>
-                            <output class="breakpoint-disable-feat-output" id="breakpoint-disable-feat"></output><i class="fa-solid fa-shield-halved"></i>
-                            <span> - </span>
-                            <output class="breakpoint-enable-feat-output" id="breakpoint-enable-feat"></output><i class="fa-solid fa-shield-halved"></i>
-                        </label>
-                        <span>Don't use SS\GWM between this values of foe's armor, inclusive!</span>
-                    </div>
-                    <hr>
                     <div class="conclusion-header">
                         <label class="without-ss-label">SS\GWM:</label>
                         <label class="without-ss-label" id="feat-disabled">Disabled</label>
@@ -158,6 +148,28 @@
                         <label class="hit-chance-no-feat-description-label"><output class="hit-chance-no-feat-output" id="hit-chance-no-feat"></output>%</label>
                         <span id="hit-chance-comparer">=</span>
                         <label class="hit-chance-description-label"><output class="hit-chance-feat-output" id="hit-chance-feat"></output>%</label>
+                    </div>
+                    <div class="non-crit-chance-container">
+                        <label class="non-crit-chance-label">Non Crit Hit Chance</label>
+                        <label class="non-crit-chance-no-feat-description-label"><output class="non-crit-chance-no-feat-output" id="non-crit-chance-no-feat"></output>%</label>
+                        <span id="non-crit-chance-comparer">=</span>
+                        <label class="non-crit-chance-description-label"><output class="non-crit-chance-feat-output" id="non-crit-chance-feat"></output>%</label>
+                    </div>
+                    <div class="crit-chance-container">
+                        <label class="crit-chance-label">Crit Hit Chance</label>
+                        <label class="crit-chance-no-feat-description-label"><output class="crit-chance-no-feat-output" id="crit-chance-no-feat"></output>%</label>
+                        <span id="crit-chance-comparer">=</span>
+                        <label class="crit-chance-description-label"><output class="crit-chance-feat-output" id="crit-chance-feat"></output>%</label>
+                    </div>
+                    <hr>
+                    <div class="breakpoint-container">
+                        <label class="breakpoint-disable-feat-label">
+                            <label class="breakpoint-label">Foe AC Breakpoints:</label>
+                            <output class="breakpoint-disable-feat-output" id="breakpoint-disable-feat"></output><i class="fa-solid fa-shield-halved"></i>
+                            <span> - </span>
+                            <output class="breakpoint-enable-feat-output" id="breakpoint-enable-feat"></output><i class="fa-solid fa-shield-halved"></i>
+                        </label>
+                        <span>Don't use SS\GWM between this values of foe's armor, inclusive!</span>
                     </div>
                 </div>
                 <hr>

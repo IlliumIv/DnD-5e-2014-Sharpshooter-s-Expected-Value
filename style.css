@@ -127,6 +127,8 @@
 .avg-damage-container,
 .avg-crit-damage-container,
 .hit-chance-container,
+.non-crit-chance-container,
+.crit-chance-container,
 .expectation-damage-container,
 .conclusion-header {
     display: grid;
@@ -139,6 +141,8 @@
 
 .avg-damage-container,
 .avg-crit-damage-container,
+.hit-chance-container,
+.non-crit-chance-container,
 .expectation-damage-container {
     border-bottom: solid;
     border-bottom-width: 1px;
@@ -162,6 +166,8 @@
 }
 
 .hit-chance-no-feat-description-label,
+.non-crit-chance-no-feat-description-label,
+.crit-chance-no-feat-description-label,
 .avg-crit-damage-no-feat-output,
 .avg-damage-no-feat-output,
 .expectation-damage-no-feat-output {
@@ -175,6 +181,8 @@
 .expectation-damage-label,
 .avg-damage-label,
 .avg-crit-damage-label,
+.non-crit-chance-label,
+.crit-chance-label,
 .hit-chance-label {
     text-align: center;
 }
@@ -203,6 +211,11 @@
 .selector-with-icon-container {
     display: grid;
     grid-template-columns: 1fr auto;
+    grid-column-gap: 10px;
+}
+
+.selector-with-icon-container > i {
+    padding: 0px;
 }
 
 .selector-with-icon-container select,
