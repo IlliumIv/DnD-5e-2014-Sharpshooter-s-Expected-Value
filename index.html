@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8"/>
-    <title>DnD 5e Expected Damage Calculator for GWM\SS</title>
-    <meta name="description" content="A mathematical expectation calculator for Sharpshooter and Great Weapon Master feats."/>
+    <title>DnD Expected Damage Calculator</title>
+    <meta name="description" content="A mathematical expectation calculator for DnD."/>
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <link rel="stylesheet" type="text/css" href="css/icons.css"/>
     <link rel="icon" href="dragon-solid.svg"/>
@@ -37,7 +37,7 @@
             </span>
         </template>
         <template id="field-template">
-            <div class="field" id="field">
+            <div class="field damage-source" id="field" name="field">
                 <span class="field-buttons-container">
                     <button class="delete-source-button" id="delete-source-button" onclick="deleteSource(event)" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                     <button class="rename-source-button" id="rename-source-button" onclick="renameSource(event)" title="Rename"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -48,14 +48,19 @@
                         <option value="dice" selected>Dice</option>
                         <option value="flat">Flat</option>
                     </select>
-                    <i class="fa-solid fa-dice-d20" id="damage-type-icon"></i>
+                    <i id="damage-type-icon"></i>
                 </span>
             </div>
+        </template>
+        <template id="icon-d20">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                <path d="M292.2 53.8C309.8 45.3 330.3 45.3 347.9 53.8L351.6 55.8L543.6 164.6C562.4 175.3 574.4 194.6 575.9 216L576.1 220.3L576.1 435.8C576.1 457.4 565.2 477.5 547.3 489.2L543.6 491.4L351.6 600.2C332 611.3 308 611.3 288.5 600.2L96.4 491.4C76.4 480.1 64 458.8 64 435.8L64 220.3L64.2 216C65.6 194.6 77.7 175.3 96.5 164.6L288.5 55.8L292.2 53.8zM296 549.4L296 493.7L161 472.9L296 549.4zM344 493.7L344 549.4L478.9 473L344 493.8zM141.4 421.3L276.4 442.1L214.1 324.6L141.4 421.3zM363.6 442.1L498.6 421.3L425.9 324.6L363.6 442.1zM320 421.8L382.5 304L257.5 304L320 421.8zM112 380.5L183.2 285.8L112 238.1L112 380.5zM456.8 285.8L528 380.5L528 238.2L456.8 285.9zM256.9 256L383.1 256L320 133.1L256.9 256zM136.7 196.9L208.6 245.1L272.9 119.7L136.7 196.9zM431.5 245L503.3 196.9L367.1 119.7L431.4 245z"/>
+            </svg>
         </template>
         <div class="wrapper">
             <div>
                 <div class="header">
-                    <span>Expected Damage Calculator for Sharpshooter and Great Weapon Master 5e 2014 feats</span>
+                    <span>Expected Damage Calculator for DnD</span>
                 </div>
                 <hr>
                 <div class="damage-sources">
@@ -64,15 +69,15 @@
                             <button onclick="exportCalculation()" title="Export"><i class="fa-solid fa-file-arrow-down"></i></button>
                             <button onclick="importCalculation()" title="Import"><i class="fa-solid fa-file-arrow-up"></i></button>
                         </span>
-                        <label>Sources:</label>
+                        <label>Damage sources:</label>
                         <label>Type:</label>
                         <label>Value:</label>
                         <label>Can crit?</label>
                     </div>
                     <div class="fields-container" id="fields-container"></div>
-                    <span class="add-button-container">
+                    <span class="add-button-container field">
                         <br>
-                        <button onclick="addSource()" title="Add"><i class="fa-solid fa-solid fa-square-plus"></i></button>
+                        <button onclick="addSource()" title="Add"><i class="fa-solid fa-solid fa-square-plus"></i>&nbsp;Add source</button>
                     </span>
                     <span class="can-crit-explanation">
                         "Yes" - This source of damage should be counted in critical damage calculation; it counts both in critical and non-critical damage calculations.
@@ -82,23 +87,28 @@
                 </div>
                 <hr>
                 <div class="settings-container" id="settings-container">
+                    <div class="attack-type-container">
+                        <label class="attack-type-label">Attack type:</label>
+                        <span class="selector-with-icon-container">
+                            <select class="attack-type-selector parameter" id="attack-type-selector" name="parameter" onchange="onChangeAttackType()">
+                                <option value="normal" selected>Normal</option>
+                                <option value="advantage">Advantage</option>
+                                <option value="disadvantage">Disadvantage</option>
+                                <option value="elven">Elven accuracy</option>
+                            </select>
+                            <i class="fa-solid" id="attack-type-icon"></i>
+                        </span>
+                    </div>
+                    <div class="luck-container">
+                        <label class="luck-label">Halfling Luck:</label>
+                        <input class="luck-input parameter" id="luck-input" name="parameter" onchange="calculate()" type="checkbox"></input>
+                        <i class="fa-regular fa-clover luck-icon" id="luck-icon"></i>
+                    </div>
                     <div class="ac-ab-container">
-                        <div class="attack-type-container">
-                            <label class="attack-type-label">Attack type:</label>
-                            <span class="selector-with-icon-container">
-                                <select class="attack-type-selector parameter" id="attack-type-selector" onchange="onChangeAttackType()">
-                                    <option value="normal" selected>Normal</option>
-                                    <option value="advantage">Advantage</option>
-                                    <option value="disadvantage">Disadvantage</option>
-                                    <option value="elven">Elven accuracy</option>
-                                </select>
-                                <i class="fa-solid" id="attack-type-icon"></i>
-                            </span>
-                        </div>
                         <div class="attack-bonus-container">
                             <div>
                                 <label class="attack-bonus-label">Attack Bonus</label>
-                                <input class="attack-bonus-input parameter" id="attack-bonus" type="number" min="-99" max="99" value="9" onchange="calculate()">
+                                <input class="attack-bonus-input parameter" id="attack-bonus" name="parameter" type="number" min="-99" max="99" value="9" onchange="calculate()">
                                 <i class="fa-solid fa-hand-fist"></i>
                             </div>
                         </div>
@@ -106,16 +116,16 @@
                         <div class="armor-class-container">
                             <div>
                                 <i class="fa-solid fa-shield-halved"></i>
-                                <input class="armor-class-input parameter" id="armor-class" type="number" min="1" max="99" value="19" onchange="calculate()">
+                                <input class="armor-class-input parameter" id="armor-class" name="parameter" type="number" min="1" max="99" value="19" onchange="calculate()">
                                 <label class="armor-class-label">Foe Armor Class</label>
                             </div>
                         </div>
                     </div>
                     <div class="crit-settings-container">
                         <label class="min-crit-value-label">Crit when roll&nbsp;</label>
-                        <input class="min-crit-value-input parameter" id="min-crit-value" type="number" min="1" max="20" value="20" onchange="calculate()">
+                        <input class="min-crit-value-input parameter" id="min-crit-value" name="parameter" type="number" min="1" max="20" value="20" onchange="calculate()">
                         <label class="crit-system-label">&nbsp;and above. Crit system:&nbsp;</label>
-                        <select class="crit-system-selector parameter" id="crit-system-selector" onchange="calculate()">
+                        <select class="crit-system-selector parameter" id="crit-system-selector" name="parameter" onchange="calculate()">
                             <option value="double-dice" selected>Double dices (default)</option>
                             <option value="max-plus-dice">Max dice value plus dice (HB)</option>
                         </select>
@@ -124,13 +134,13 @@
                 <hr>
                 <div class="conclusion-container" id="conclusion-container">
                     <div class="conclusion-header">
-                        <label class="without-ss-label">SS\GWM:</label>
+                        <label class="without-ss-label">5e SS\GWM<sup><a href="https://rpgbot.net/dnd5/characters/feats/great-weapon-master-sharpshooter/" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a></sup> feat:</label>
                         <label class="without-ss-label" id="feat-disabled">Disabled</label>
                         <span id="feat-usage-comparer"></span>
                         <label class="with-ss-label" id="feat-enabled">Enabled</label>
                     </div>
                     <div class="expectation-damage-container">
-                        <label class="expectation-damage-label">Damage Expected Value<sup><a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a></sup></label>
+                        <label class="expectation-damage-label">Damage expected value<sup><a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a></sup></label>
                         <output class="expectation-damage-no-feat-output" id="expectation-damage-no-feat"></output>
                         <span id="expectation-damage-comparer"></span>
                         <output class="expectation-damage-feat-output" id="expectation-damage-feat"></output>
@@ -148,25 +158,25 @@
                         <output class="avg-crit-damage-feat-output winner" id="avg-crit-damage-feat"></output>
                     </div>
                     <div class="hit-chance-container">
-                        <label class="hit-chance-label">Hit Chance</label>
+                        <label class="hit-chance-label">Hit chance</label>
                         <label class="hit-chance-no-feat-description-label"><output class="hit-chance-no-feat-output" id="hit-chance-no-feat"></output>%</label>
                         <span id="hit-chance-comparer">=</span>
                         <label class="hit-chance-description-label"><output class="hit-chance-feat-output" id="hit-chance-feat"></output>%</label>
                     </div>
                     <div class="non-crit-chance-container">
-                        <label class="non-crit-chance-label">Non Crit Hit Chance</label>
+                        <label class="non-crit-chance-label">Non Crit chance</label>
                         <label class="non-crit-chance-no-feat-description-label"><output class="non-crit-chance-no-feat-output" id="non-crit-chance-no-feat"></output>%</label>
                         <span id="non-crit-chance-comparer">=</span>
                         <label class="non-crit-chance-description-label"><output class="non-crit-chance-feat-output" id="non-crit-chance-feat"></output>%</label>
                     </div>
                     <div class="crit-chance-container">
-                        <label class="crit-chance-label">Crit Hit Chance</label>
+                        <label class="crit-chance-label">Crit chance</label>
                         <label class="crit-chance-no-feat-description-label"><output class="crit-chance-no-feat-output" id="crit-chance-no-feat"></output>%</label>
                         <span id="crit-chance-comparer">=</span>
                         <label class="crit-chance-description-label"><output class="crit-chance-feat-output" id="crit-chance-feat"></output>%</label>
                     </div>
                     <span class="chances-explanation">
-                        Chances based on AnyDice <a href="https://anydice.com/program/3f539" target="_blank">calculations</a>.
+                        Chances based on AnyDice <a href="https://anydice.com/program/3f5cf" target="_blank">calculations</a>.
                     </span>
                     <hr>
                     <div class="breakpoint-container">

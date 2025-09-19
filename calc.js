@@ -66,7 +66,7 @@ function calculate() {
     var avgDicesCrit = 0;
 
     var critSystem = document.querySelector("#crit-system-selector").value;
-    var elements = document.getElementsByClassName("field");
+    var elements = document.getElementsByName("field");
 
     for (var i = 0; i < elements.length; i++) {
         var type = elements[i].querySelector("#type-selector").value;
@@ -275,7 +275,7 @@ function importCalculation() {
 
 function getSourcesJson() {
     var arr = [];
-    var fields = document.getElementsByClassName("field");
+    var fields = document.getElementsByName("field");
 
     for (var i = 0; i < fields.length; i++) {
         var name = fields[i].querySelector("#field-name").innerHTML;
@@ -292,7 +292,7 @@ function getSourcesJson() {
 
 function getSettingsJson() {
     var arr = [];
-    var settings = document.querySelector("#settings-container").getElementsByClassName("parameter");
+    var settings = document.getElementsByName("parameter");
 
     for (var i = 0; i < settings.length; i++) {
         var id = settings[i].id;
@@ -436,15 +436,15 @@ function renderSourceDamage(templateType, field) {
     var canCritTemplate = document.querySelector("#can-crit-template")
     field.appendChild(document.importNode(canCritTemplate.content, true));
 
-    var icon = field.querySelector("#damage-type-icon");
+    var iconContainer = field.querySelector("#damage-type-icon");
+    iconContainer.innerHTML = "";
+
     if (templateType == "dice") {
-        field.querySelector("#yes").setAttribute("selected", "")
-        icon.classList.remove("fa-plus");
-        icon.classList.add("fa-dice-d20");
+        var iconTemplate = document.querySelector("#icon-d20");
+        iconContainer.appendChild(document.importNode(iconTemplate.content, true));
+        field.querySelector("#yes").setAttribute("selected", "");
     }
     if (templateType == "flat") {
-        icon.classList.remove("fa-dice-d20");
-        icon.classList.add("fa-plus");
         field.querySelector("#no").setAttribute("selected", "")
         field.querySelector("#can-crit-selector").setAttribute("disabled", "")
     }
@@ -472,7 +472,7 @@ function calculateOld() {
     var avgCrit = 0;
 
     var critSystem = document.querySelector("#crit-system-selector").value;
-    var elements = document.getElementsByClassName("field");
+    var elements = document.getElementsByName("field");
 
     for (var i = 0; i < elements.length; i++) {
         var type = elements[i].querySelector("#type-selector").value;
