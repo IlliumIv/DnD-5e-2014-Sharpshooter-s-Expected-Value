@@ -5,3 +5,4 @@ TODO:
 - Additional dices to attack roll (like Superiority or Bless)
 - Damage on miss
 - Reroll when roll less than N on damage dices
+- Hexed state?
