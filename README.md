@@ -6,3 +6,6 @@ TODO:
 - Damage on miss
 - Reroll when roll less than N on damage dices
 - Hexed state?
+- Conditions?
+- Temporary disable source
+- Average damage in turn
